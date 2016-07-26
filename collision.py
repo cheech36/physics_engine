@@ -11,7 +11,7 @@ class BP:
 
     def __init__(self, axis_name, axis_value, mode='bi'):
         BP.class_instance += 1
-        self.id = [0, 0, BP.class_id, BP.class_instance]
+        self.id = (0, 0, BP.class_id, BP.class_instance)
         self.axis_name = axis_name
         self.norm_axis = self.axis[axis_name]
         self.axis_mode = self.direction[mode]
@@ -49,33 +49,25 @@ class CollisionMonitor:
     def __init__(self):
         self.interacting_sets = dict()
 
-
     def check(self, set1_id, set2_id):
         set1 = self.interacting_sets.get(set1_id)
         set2 = self.interacting_sets.get(set2_id)
         collision_list = []
 
-
-        if(set1_id != set2_id):         #Check for collision between sets
+        # Check for collision between sets
+        if(set1_id != set2_id):
             for obj1 in set1:
                 for obj2 in set2:
                     collision = 0
                     type1 = obj1.class_type
                     type2 = obj2.class_type
-                    if(type1 == BALL and type2 == PLANE):
-                        collision = self.check_player_plane(obj1, obj2)
-                        if(collision):
-                            self.on_player_plane(obj1, obj2)
-                    elif(type1 == PLANE and type2 == BALL):
-                        collision = self.check_player_plane(obj2, obj1)
-                        if(collision):
-                            self.on_player_plane(obj2, obj1)
+                    set = (type1, type2)
+                    if( set == (BALL, PLANE) or set == (PLANE, BALL)):
+                        if(self.check_player_plane(obj1, obj2)):
+                            collision_list.append((COLL_BALL_PLANE, obj1, obj2))
 
-                    if (collision):
-                        collision_list.append(obj1.id)
-                        collision_list.append(obj2.id)
-
-        elif( set1_id == set2_id):       #Check for collisions within the sets - For now its just players
+        # A more efficient routine for collisions within the same set
+        elif(set1_id == set2_id):
             for j in range(0, len(set1)):
                 obj1 = set1[j]
                 for i in range(j + 1, len(set1)):
@@ -83,21 +75,36 @@ class CollisionMonitor:
                     collision = 0
                     if(obj1.class_type == BALL):
                         collision = self.check_player_player(obj1, obj2)
-
                     if(collision):
-                        collision_list.append(obj1.id)
-                        collision_list.append(obj2.id)
-                        self.on_player_player(obj1, obj2)
-
-
+                        collision_list.append((COLL_BALL_BALL, obj1, obj2))
 
         if (len(collision_list)):
-            pass
-            #Go to resolve collisions
-            #print(collision_list)
+            self.handle_collisions(collision_list)
 
-    def check_player_plane(self, player, plane):
-            return plane.boundary[0].check(player)
+
+    def handle_collisions(self, list):
+        for collision in list:
+            coll_type = collision[0]
+            obj1 = collision[1]
+            obj2 = collision[2]
+            # To do check again after handling to make sure collisions were resolved
+            if (coll_type == COLL_BALL_PLANE):
+                self.on_player_plane(obj1, obj2)
+                #check again here
+            if (coll_type == COLL_BALL_BALL):
+                self.on_player_player(obj1, obj2)
+                #check again here
+
+
+    def check_player_plane(self, obj1, obj2):
+        if (obj1.class_type == BALL and obj2.class_type == PLANE):
+            return obj2.boundary[0].check(obj1)
+        elif (obj2.class_type == BALL and obj1.class_type == PLANE):
+            return obj1.boundary[0].check(obj2)
+        else:
+            print('Error: BALL and/or PLANE missing from collision set')
+            return 0
+
 
     def check_player_player(self,obj1, obj2):
         distance = obj1.position - obj2.position
@@ -111,18 +118,10 @@ class CollisionMonitor:
         vel_norm = plane.boundary[0].getdata()
 
         if (len(plane.reaction)):
+            # Execute specialized boundary if available
             pass
-            # This will alllow for a custom reaction which can be added to the boundary
-
-        elif (vel_norm == 1):
-            plr.getVelocity()[vel_norm] *= -plr.restitution
-            # For some reason 2 this threshold needs to be ~ 2 or the balls continue to bounce
-            if abs(plr.getVelocity()[vel_norm]) < 2:
-                plr.getVelocity()[vel_norm] = 0
-            plr.position[1] = 0
-            plr.acceleration[1] = 0
         else:
-            # Reflect off horizontal planes
+            # Default is to bounce of planes elastically
             plr.velocity[vel_norm[0]] *= -1
 
     def on_player_player(self,objX, objY):
@@ -139,7 +138,6 @@ class CollisionMonitor:
         dv2 = 2*(u/m2)*vRel_vec.proj(rNorselfvec)
         v1_vec           = u1_vec - dv1
         v2_vec           = u2_vec + dv2
-
         objX.velocity = v1_vec
         objY.velocity = v2_vec
 

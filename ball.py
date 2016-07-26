@@ -9,7 +9,7 @@ class Ball(sphere):
         super(Ball, self).__init__(pos=pos,radius=size, color=color.blue)
 
         Ball.class_instance += 1
-        self.id = [Ball.class_type, Ball.class_instance, Ball.class_type, Ball.class_instance]
+        self.id = (Ball.class_type, Ball.class_instance, Ball.class_type, Ball.class_instance)
        #          [Class type, Class instance, Boundary type, Boundary instance]
 
         self.net_force = vector(0,0,0)

@@ -20,7 +20,7 @@ class World(object):
         self.dt = .01
 
     def init_scene(self):
-        scene1 = display(x=1600, y=200, width=600, height=600)
+        scene1 = display(x=200, y=200, width=600, height=600)
         arena = []
         print(scene1.forward)
         # scene1.forward = (0,-.3,-1)

@@ -1,16 +1,24 @@
 from visual import *
+from common import *
 
 class Ball(sphere):
     REST_THRESHOLD = .01
-    class_id = 1
+    class_type = BALL
+    class_instance = 0
     def __init__(self,pos, size):
         super(Ball, self).__init__(pos=pos,radius=size, color=color.blue)
+
+        Ball.class_instance += 1
+        self.id = [Ball.class_type, Ball.class_instance, Ball.class_type, Ball.class_instance]
+       #          [Class type, Class instance, Boundary type, Boundary instance]
+
         self.net_force = vector(0,0,0)
         self.acceleration = vector(0,0,0)
         self.velocity = vector(0,0,0)
         self.position = vector(pos)
         self.mass = 20
         self.restitution = 1
+
 
     def apply_constant_force(self, new_force):
         self.net_force += vector(new_force)

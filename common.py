@@ -1,0 +1,4 @@
+#Class ID's
+BALL = 1
+PLANE = 2
+BOUNDING_PLANE = 3

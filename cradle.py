@@ -25,23 +25,23 @@ class World(object):
         print(scene1.forward)
         # scene1.forward = (0,-.3,-1)
 
-        l = 20
-        t = -1
-        h = 40
+        l = 30
+        t = 3
+        h = 2*l
 
-        floor      = Plane(( 0, -(h-1)/2, 0), (40, 1, 40))
-        ceiling    = Plane(( 0, (h+1)/2, 0),(40, 1, 40))
-        back_wall  = Plane(( 0,1,-19.5), (40, h, 1))
-        front_wall = Plane(( 0,1, 19.5), (40, h, 1))
-        right_wall = Plane(( 19.5,1, 0), (1, h, 40))
-        left_wall  = Plane((-19.5,1, 0), (1, h, 40))
+        floor      = Plane(( 0, -(h-t)/2, 0), (h, t, h))
+        ceiling    = Plane(( 0, (h+t)/2, 0),(h, t, h))
+        back_wall  = Plane(( 0,t, -l + t/2), (h, h, t))
+        front_wall = Plane(( 0,t, l - t/2), (h, h, t))
+        right_wall = Plane(( l - t/2,t, 0), (t, h, h))
+        left_wall  = Plane((-l + t/2 ,t, 0), (t, h, h))
 
-        floor.boundary.append(BP('y', -h/2, 'neg'))
-        ceiling.boundary.append(BP('y', h/2, 'pos'))
-        back_wall.boundary.append(BP('z',  19,'pos'))
-        front_wall.boundary.append(BP('z', -19,'neg'))
-        right_wall.boundary.append(BP('x',  19,'pos'))
-        left_wall.boundary.append(BP('x', -19,'neg'))
+        floor.add_boundary('y', 'neg', 'top')
+        ceiling.add_boundary('y', 'pos', 'bottom')
+        back_wall.add_boundary('z', 'neg', 'left')
+        front_wall.add_boundary('z', 'pos', 'right')
+        right_wall.add_boundary('x', 'pos', 'back')
+        left_wall.add_boundary('x', 'neg', 'front')
 
         #ceiling.visible = False
         arena.append(floor)
@@ -85,7 +85,6 @@ class World(object):
                 self.manager.apply_impulse(event[1])
 
     def run(self):
-
         while true:
             rate(200)
             self.manager.update(self.dt)

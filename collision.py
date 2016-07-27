@@ -9,9 +9,9 @@ class BP:
     class_id = BOUNDING_PLANE
     class_instance = 0
 
-    def __init__(self, axis_name, axis_value, mode='bi'):
+    def __init__(self, axis_name, axis_value, mode='bi', parent_id = (0,0)):
         BP.class_instance += 1
-        self.id = (0, 0, BP.class_id, BP.class_instance)
+        self.id = parent_id + (BP.class_id, BP.class_instance)
         self.axis_name = axis_name
         self.norm_axis = self.axis[axis_name]
         self.axis_mode = self.direction[mode]
@@ -40,10 +40,6 @@ class BP:
 
     def gettype(self):
         return self.type
-
-    def register(self, super_id):
-        self.id[0:1] = super_id[0:1]
-
 
 class CollisionMonitor:
     def __init__(self):
@@ -95,7 +91,6 @@ class CollisionMonitor:
                 self.on_player_player(obj1, obj2)
                 #check again here
 
-
     def check_player_plane(self, obj1, obj2):
         if (obj1.class_type == BALL and obj2.class_type == PLANE):
             return obj2.boundary[0].check(obj1)
@@ -104,7 +99,6 @@ class CollisionMonitor:
         else:
             print('Error: BALL and/or PLANE missing from collision set')
             return 0
-
 
     def check_player_player(self,obj1, obj2):
         distance = obj1.position - obj2.position
@@ -118,11 +112,11 @@ class CollisionMonitor:
         vel_norm = plane.boundary[0].getdata()
 
         if (len(plane.reaction)):
-            # Execute specialized boundary if available
+            # Execute specialized boundary behavior if available
             pass
         else:
             # Default is to bounce of planes elastically
-            plr.velocity[vel_norm[0]] *= -1
+            plr.velocity[vel_norm[0]] *= -plr.restitution
 
     def on_player_player(self,objX, objY):
         m1               = objX.mass
